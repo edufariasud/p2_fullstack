@@ -118,3 +118,8 @@ class CardapioP1TestesCompletos(TestCase):
         api = self.client.get("/api/dashboard/")
         self.assertEqual(api.status_code, 200)
         self.assertEqual(api.json()["total_comandas"], 1)
+
+    def test_dashboard_aceita_data_invalida_sem_erro_500(self):
+        resposta = self.client.get(reverse("dashboard"), {"inicio": "nao-e-data"})
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, "Informe datas válidas")

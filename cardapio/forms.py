@@ -1,6 +1,11 @@
 from django import forms
 from .models import Mesa, Prato, Combo, Comanda, ItemComanda
 
+
+class PeriodoForm(forms.Form):
+    inicio = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
+    fim = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
+
 class MesaForm(forms.ModelForm):
     class Meta:
         model = Mesa

@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from core.decorators import papel_obrigatorio
 from core.utils import eh_admin, org_atual
-from .forms import ComboForm, ComandaForm, ItemComandaForm, PratoForm
+from .forms import ComboForm, ComandaForm, ItemComandaForm, PeriodoForm, PratoForm
 from .models import Combo, Comanda, ItemComanda, Mesa, Prato
 
 
@@ -129,17 +129,18 @@ def novo_combo(request):
 def _base_dashboard(request):
     org = org_atual(request)
     qs = Comanda.objects.filter(organizacao=org)
-    inicio, fim = request.GET.get("inicio"), request.GET.get("fim")
-    if inicio:
-        qs = qs.filter(data_abertura__date__gte=inicio)
-    if fim:
-        qs = qs.filter(data_abertura__date__lte=fim)
-    return qs
+    form = PeriodoForm(request.GET)
+    if form.is_valid():
+        if form.cleaned_data["inicio"]:
+            qs = qs.filter(data_abertura__date__gte=form.cleaned_data["inicio"])
+        if form.cleaned_data["fim"]:
+            qs = qs.filter(data_abertura__date__lte=form.cleaned_data["fim"])
+    return qs, form
 
 
 @login_required
 def dashboard(request):
-    base = _base_dashboard(request)
+    base, periodo_form = _base_dashboard(request)
     itens = ItemComanda.objects.filter(comanda__in=base)
     ranking = itens.values("prato__nome", "combo__nome").annotate(total=Count("id")).order_by("-total")[:5]
     por_mes = base.annotate(mes=TruncMonth("data_abertura")).values("mes").annotate(total=Count("id")).order_by("mes")
@@ -148,7 +149,7 @@ def dashboard(request):
     return render(request, "cardapio/dashboard.html", {
         "total_comandas": base.count(), "abertas": base.filter(status="aberta").count(), "faturamento": faturamento,
         "ranking": ranking, "por_mes": list(por_mes), "distribuicao": distribuicao, "inicio": request.GET.get("inicio", ""),
-        "fim": request.GET.get("fim", ""), "pode_exportar": eh_admin(request),
+        "fim": request.GET.get("fim", ""), "pode_exportar": eh_admin(request), "periodo_form": periodo_form,
     })
 
 
@@ -158,6 +159,7 @@ def exportar_comandas_csv(request):
     response["Content-Disposition"] = 'attachment; filename="relatorio_comandas.csv"'
     writer = csv.writer(response)
     writer.writerow(["Comanda", "Mesa", "Cliente", "Status", "Abertura", "Total"])
-    for comanda in _base_dashboard(request).select_related("mesa"):
+    base, _ = _base_dashboard(request)
+    for comanda in base.select_related("mesa"):
         writer.writerow([comanda.id, comanda.mesa.numero, comanda.cliente_nome, comanda.get_status_display(), comanda.data_abertura.strftime("%d/%m/%Y %H:%M"), f"{comanda.total_consumo:.2f}"])
     return response
