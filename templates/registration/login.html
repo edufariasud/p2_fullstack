@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Entrar - Cardápio Digital{% endblock %}
+
+{% block content %}
+<section class="section login-box">
+    <h2>Acessar o sistema</h2>
+    <p class="subtitle">Entre com o usuário cadastrado para o seu restaurante.</p>
+    <form method="post" class="form-card">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% if form.errors %}<p class="form-error">Usuário ou senha inválidos.</p>{% endif %}
+        <button class="btn btn-primary" type="submit">Entrar</button>
+    </form>
+</section>
+{% endblock %}

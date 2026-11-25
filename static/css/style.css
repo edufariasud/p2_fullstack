@@ -29,6 +29,17 @@ body {
     flex-direction: column;
 }
 
+.inline-form { display: inline; }
+.link-button { background: none; border: 0; cursor: pointer; }
+.login-box { max-width: 440px; margin: 2rem auto; }
+.form-card p { margin: 1rem 0; }
+.form-card input { display: block; width: 100%; margin-top: .25rem; padding: .5rem; border: 1px solid var(--border-color); border-radius: var(--radius); }
+.form-error { color: var(--danger); }
+.filter-form { display: flex; gap: 1rem; align-items: end; flex-wrap: wrap; }
+.filter-form label { display: grid; gap: .25rem; font-size: .9rem; }
+.filter-form input { padding: .45rem; border: 1px solid var(--border-color); border-radius: var(--radius); }
+.dashboard-cards { margin-bottom: 1.5rem; }
+
 .container {
     max-width: 1140px;
     margin: 0 auto;

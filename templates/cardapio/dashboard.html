@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Cardápio Digital{% endblock %}
+{% block content %}
+<div class="dashboard-header"><div><h2>Dashboard do Restaurante</h2><p class="subtitle">Métricas das comandas da sua organização.</p></div></div>
+<section class="section">
+    <form method="get" class="filter-form"><label>De <input type="date" name="inicio" value="{{ inicio }}"></label><label>Até <input type="date" name="fim" value="{{ fim }}"></label><button class="btn btn-outline">Filtrar</button>{% if pode_exportar %}<a class="btn btn-primary" href="{% url 'exportar_comandas_csv' %}?inicio={{ inicio }}&fim={{ fim }}">Exportar CSV</a>{% endif %}</form>
+</section>
+<div class="stats-cards dashboard-cards"><div class="stat-card"><span class="stat-number">{{ total_comandas }}</span><span class="stat-label">Comandas</span></div><div class="stat-card stat-occupied"><span class="stat-number">{{ abertas }}</span><span class="stat-label">Em aberto</span></div><div class="stat-card stat-total"><span class="stat-number">R$ {{ faturamento|floatformat:2 }}</span><span class="stat-label">Faturamento</span></div></div>
+<section class="section"><h3>Itens mais pedidos</h3><table class="table"><thead><tr><th>Item</th><th>Pedidos</th></tr></thead><tbody>{% for item in ranking %}<tr><td>{{ item.prato__nome|default:item.combo__nome }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2">Sem dados no período.</td></tr>{% endfor %}</tbody></table></section>
+<section class="section"><h3>Comandas por mês</h3>{{ por_mes|json_script:"dados-mes" }}<canvas id="grafico-mes"></canvas></section>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>const dados=JSON.parse(document.getElementById('dados-mes').textContent);new Chart(document.getElementById('grafico-mes'),{type:'line',data:{labels:dados.map(x=>new Date(x.mes).toLocaleDateString('pt-BR',{month:'short',year:'numeric'})),datasets:[{label:'Comandas',data:dados.map(x=>x.total),borderColor:'#2563eb',backgroundColor:'#2563eb'}]}});</script>
+{% endblock %}

@@ -11,4 +11,6 @@ urlpatterns = [
     path("cardapio/", views.cardapio_lista, name="cardapio_lista"),
     path("cardapio/prato/novo/", views.novo_prato, name="novo_prato"),
     path("cardapio/combo/novo/", views.novo_combo, name="novo_combo"),
+    path("dashboard/", views.dashboard, name="dashboard"),
+    path("dashboard/exportar/", views.exportar_comandas_csv, name="exportar_comandas_csv"),
 ]

@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from decimal import Decimal
+from core.models import Organizacao
 
 class Mesa(models.Model):
     STATUS_CHOICES = [
@@ -9,7 +10,8 @@ class Mesa(models.Model):
         ("reservada", "Reservada"),
     ]
 
-    numero = models.PositiveIntegerField(unique=True, verbose_name="Número da Mesa")
+    organizacao = models.ForeignKey(Organizacao, on_delete=models.PROTECT, related_name="mesas")
+    numero = models.PositiveIntegerField(verbose_name="Número da Mesa")
     capacidade = models.PositiveIntegerField(default=4, verbose_name="Capacidade de Pessoas")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="livre", verbose_name="Status")
 
@@ -17,6 +19,7 @@ class Mesa(models.Model):
         verbose_name = "Mesa"
         verbose_name_plural = "Mesas"
         ordering = ["numero"]
+        constraints = [models.UniqueConstraint(fields=["organizacao", "numero"], name="mesa_numero_por_organizacao")]
 
     def __str__(self):
         return f"Mesa {self.numero} - {self.get_status_display()}"
@@ -30,6 +33,7 @@ class Prato(models.Model):
         ("bebida", "Bebida"),
     ]
 
+    organizacao = models.ForeignKey(Organizacao, on_delete=models.PROTECT, related_name="pratos")
     nome = models.CharField(max_length=150, verbose_name="Nome do Prato")
     categoria = models.CharField(max_length=20, choices=CATEGORIAS, default="principal", verbose_name="Categoria")
     preco = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Preço (R$)")
@@ -46,6 +50,7 @@ class Prato(models.Model):
 
 
 class Combo(models.Model):
+    organizacao = models.ForeignKey(Organizacao, on_delete=models.PROTECT, related_name="combos")
     nome = models.CharField(max_length=150, verbose_name="Nome do Combo")
     descricao = models.TextField(blank=True, verbose_name="Descrição do Combo")
     preco = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Preço Especial (R$)")
@@ -68,6 +73,7 @@ class Comanda(models.Model):
         ("cancelada", "Cancelada"),
     ]
 
+    organizacao = models.ForeignKey(Organizacao, on_delete=models.PROTECT, related_name="comandas")
     mesa = models.ForeignKey(Mesa, on_delete=models.CASCADE, related_name="comandas", verbose_name="Mesa")
     cliente_nome = models.CharField(max_length=100, blank=True, verbose_name="Nome do Cliente / Responsável")
     status = models.CharField(max_length=20, choices=STATUS_COMANDA, default="aberta", verbose_name="Status da Comanda")
@@ -100,6 +106,7 @@ class Comanda(models.Model):
 
 
 class ItemComanda(models.Model):
+    organizacao = models.ForeignKey(Organizacao, on_delete=models.PROTECT, related_name="itens_comanda")
     comanda = models.ForeignKey(Comanda, on_delete=models.CASCADE, related_name="itens", verbose_name="Comanda")
     prato = models.ForeignKey(Prato, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Prato Escolhido")
     combo = models.ForeignKey(Combo, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Combo Escolhido")
@@ -128,4 +135,6 @@ class ItemComanda(models.Model):
                 self.preco_unitario = self.combo.preco
             else:
                 self.preco_unitario = Decimal("0.00")
+        if not self.organizacao_id and self.comanda_id:
+            self.organizacao = self.comanda.organizacao
         super().save(*args, **kwargs)

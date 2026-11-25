@@ -18,10 +18,14 @@
                 </div>
             </div>
             <nav class="nav">
-                <a href="{% url 'index' %}" class="nav-link">🪑 Mesas & Salão</a>
-                <a href="{% url 'cardapio_lista' %}" class="nav-link">📜 Cardápio & Combos</a>
-                <a href="{% url 'abrir_comanda' %}" class="btn btn-primary btn-sm">+ Abrir Comanda</a>
-                <a href="/admin/" target="_blank" class="nav-link nav-admin">⚙️ Admin</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'index' %}" class="nav-link">🪑 Mesas & Salão</a>
+                    <a href="{% url 'cardapio_lista' %}" class="nav-link">📜 Cardápio & Combos</a>
+                    <a href="{% url 'dashboard' %}" class="nav-link">📊 Dashboard</a>
+                    <a href="{% url 'abrir_comanda' %}" class="btn btn-primary btn-sm">+ Abrir Comanda</a>
+                    {% if user.perfil.papel == 'admin' %}<a href="/admin/" target="_blank" class="nav-link nav-admin">⚙️ Admin</a>{% endif %}
+                    <form method="post" action="{% url 'logout' %}" class="inline-form">{% csrf_token %}<button class="nav-link link-button" type="submit">Sair ({{ user.username }})</button></form>
+                {% endif %}
             </nav>
         </div>
     </header>
@@ -42,7 +46,7 @@
 
     <footer class="footer">
         <div class="container footer-content">
-            <p>Laboratório de Programação Full Stack — Avaliação P1 (MVP Funcional)</p>
+            <p>Laboratório de Programação Full Stack — Avaliação P2 (Mini-SaaS)</p>
             <p class="footer-sub">Professor: Márcio Garrido | Projeto: Cardápio Digital (Opção 9)</p>
         </div>
     </footer>

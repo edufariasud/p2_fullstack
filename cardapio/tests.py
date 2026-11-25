@@ -1,16 +1,22 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.contrib.auth.models import User
+from core.models import Organizacao, Perfil
 from .models import Mesa, Prato, Combo, Comanda, ItemComanda
 
 class CardapioP1TestesCompletos(TestCase):
     def setUp(self):
         self.client = Client()
-        self.mesa = Mesa.objects.create(numero=1, capacidade=4, status="livre")
+        self.org = Organizacao.objects.create(nome="Restaurante Teste")
+        self.user = User.objects.create_user("admin", password="senha123")
+        Perfil.objects.create(usuario=self.user, organizacao=self.org, papel="admin")
+        self.client.force_login(self.user)
+        self.mesa = Mesa.objects.create(organizacao=self.org, numero=1, capacidade=4, status="livre")
         self.prato = Prato.objects.create(
-            nome="Filé Parmegiana", categoria="principal", preco=50.00, descricao="Prato clássico", disponivel=True
+            organizacao=self.org, nome="Filé Parmegiana", categoria="principal", preco=50.00, descricao="Prato clássico", disponivel=True
         )
         self.combo = Combo.objects.create(
-            nome="Combo Casal", preco=90.00, descricao="Para duas pessoas", disponivel=True
+            organizacao=self.org, nome="Combo Casal", preco=90.00, descricao="Para duas pessoas", disponivel=True
         )
         self.combo.pratos.add(self.prato)
 

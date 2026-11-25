@@ -21,10 +21,9 @@ class ComandaForm(forms.ModelForm):
             "observacoes": forms.Textarea(attrs={"class": "form-control", "rows": 2, "placeholder": "Observações gerais"}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, organizacao=None, **kwargs):
         super().__init__(*args, **kwargs)
-        # Filtra preferencialmente mesas livres na abertura
-        self.fields["mesa"].queryset = Mesa.objects.all()
+        self.fields["mesa"].queryset = Mesa.objects.filter(organizacao=organizacao, status="livre")
 
 class ItemComandaForm(forms.ModelForm):
     tipo_item = forms.ChoiceField(
@@ -44,10 +43,10 @@ class ItemComandaForm(forms.ModelForm):
             "observacao": forms.TextInput(attrs={"class": "form-control", "placeholder": "Ex: sem cebola, gelo e limão"}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, organizacao=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["prato"].queryset = Prato.objects.filter(disponivel=True)
-        self.fields["combo"].queryset = Combo.objects.filter(disponivel=True)
+        self.fields["prato"].queryset = Prato.objects.filter(organizacao=organizacao, disponivel=True)
+        self.fields["combo"].queryset = Combo.objects.filter(organizacao=organizacao, disponivel=True)
         self.fields["prato"].required = False
         self.fields["combo"].required = False
 
@@ -76,6 +75,12 @@ class PratoForm(forms.ModelForm):
             "disponivel": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
+    def clean_preco(self):
+        preco = self.cleaned_data["preco"]
+        if preco <= 0:
+            raise forms.ValidationError("O preço do prato deve ser maior que zero.")
+        return preco
+
 class ComboForm(forms.ModelForm):
     class Meta:
         model = Combo
@@ -87,3 +92,13 @@ class ComboForm(forms.ModelForm):
             "pratos": forms.SelectMultiple(attrs={"class": "form-select", "size": 5}),
             "disponivel": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
+
+    def __init__(self, *args, organizacao=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["pratos"].queryset = Prato.objects.filter(organizacao=organizacao)
+
+    def clean_preco(self):
+        preco = self.cleaned_data["preco"]
+        if preco <= 0:
+            raise forms.ValidationError("O preço do combo deve ser maior que zero.")
+        return preco
