@@ -106,3 +106,15 @@ class CardapioP1TestesCompletos(TestCase):
         nomes = [item["nome"] for item in resposta.json()]
         self.assertIn("Filé Parmegiana", nomes)
         self.assertNotIn("Item de outra organização", nomes)
+
+    def test_dashboard_mostra_apenas_metricas_da_organizacao(self):
+        comanda = Comanda.objects.create(organizacao=self.org, mesa=self.mesa, status="aberta")
+        ItemComanda.objects.create(organizacao=self.org, comanda=comanda, prato=self.prato, quantidade=2, preco_unitario=50)
+        outra_org = Organizacao.objects.create(nome="Restaurante Distante")
+        outra_mesa = Mesa.objects.create(organizacao=outra_org, numero=1)
+        Comanda.objects.create(organizacao=outra_org, mesa=outra_mesa, status="aberta")
+        resposta = self.client.get(reverse("dashboard"))
+        self.assertContains(resposta, "R$ 100,00")
+        api = self.client.get("/api/dashboard/")
+        self.assertEqual(api.status_code, 200)
+        self.assertEqual(api.json()["total_comandas"], 1)

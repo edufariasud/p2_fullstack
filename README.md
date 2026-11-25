@@ -4,14 +4,21 @@
 **Professor:** Márcio Garrido  
 **Aluno:** Eduardo Augusto Figueiredo de Faria  
 **Matrícula:** 202413235  
-**Avaliação:** P1 — MVP Funcional (Aula 12)  
+**Avaliação:** P2 — Mini-SaaS (Aula 20)  
 **Tema Escolhido:** Opção 9 — Cardápio Digital  
 
 ---
 
-## 📌 1. Visão Geral do Projeto (P1)
+## 📌 1. Visão Geral do Projeto
 
 Este projeto implementa o MVP funcional completo do sistema de **Cardápio Digital** para restaurantes, bares e lanchonetes. O sistema permite o gerenciamento do salão de mesas, o cardápio de pratos e combos promocionais, e o ciclo completo de atendimento por comanda com fechamento de conta.
+
+### Evolução da P2
+
+- **Multi-organização:** cada restaurante possui seus próprios dados. Todas as consultas, telas e endpoints da API são filtrados pela organização do usuário autenticado.
+- **Perfis:** `Administrador` cadastra cardápio e combos; `Operador` atende comandas. O perfil também determina o acesso à exportação CSV.
+- **API REST:** os recursos Mesa, Prato, Combo, Comanda e Item de Comanda estão disponíveis em `/api/`, com autenticação e isolamento por restaurante.
+- **Dashboard:** a rota `/dashboard/` apresenta KPIs, ranking de itens, série mensal com Chart.js e filtro por período; o administrador pode exportar o relatório em CSV.
 
 ### As 5 Entidades da Rubrica
 1. **`Mesa`**: Controle físico do salão com número, capacidade e status dinâmico (`Livre`, `Ocupada`, `Reservada`).
@@ -73,6 +80,8 @@ O banco já está populado com dados de teste e superusuário:
 - **Usuário:** `admin`
 - **Senha:** `admin123`
 
+Após aplicar as migrações da P2, o usuário já existente recebe um perfil de administrador do **Restaurante Principal**. Para demonstrar o isolamento, crie uma segunda organização, um usuário e um perfil no admin.
+
 ---
 
 ## 🧭 4. Rotas e Telas do Sistema
@@ -86,6 +95,8 @@ O banco já está populado com dados de teste e superusuário:
 | `/comanda/<id>/fechar/` | **Fechamento de Conta:** Extrato final com taxa de serviço e liberação automática da mesa |
 | `/cardapio/prato/novo/` | **Cadastro de Prato:** Adicionar novos itens ao cardápio via ModelForm |
 | `/cardapio/combo/novo/` | **Cadastro de Combo:** Montagem de combo promocional vinculando múltiplos pratos |
+| `/dashboard/` | Indicadores, ranking, gráfico mensal e exportação CSV |
+| `/api/` | API REST autenticada dos recursos principais |
 
 ---
 
