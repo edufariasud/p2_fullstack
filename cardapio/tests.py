@@ -97,3 +97,12 @@ class CardapioP1TestesCompletos(TestCase):
         self.assertEqual(comanda.status, "fechada")
         self.assertIsNotNone(comanda.data_fechamento)
         self.assertEqual(self.mesa.status, "livre")
+
+    def test_api_lista_apenas_dados_da_organizacao_logada(self):
+        outra_org = Organizacao.objects.create(nome="Outro Restaurante")
+        Prato.objects.create(organizacao=outra_org, nome="Item de outra organização", preco=20, categoria="entrada")
+        resposta = self.client.get("/api/pratos/")
+        self.assertEqual(resposta.status_code, 200)
+        nomes = [item["nome"] for item in resposta.json()]
+        self.assertIn("Filé Parmegiana", nomes)
+        self.assertNotIn("Item de outra organização", nomes)
